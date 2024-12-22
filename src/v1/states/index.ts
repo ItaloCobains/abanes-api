@@ -38,6 +38,14 @@ export default async function routes(app: FastifyTypedInstance) {
         .send({ message: "Acronym must have 2 characters" });
     }
 
+    const existingAcronym = await StatesService.getStateByAcronym(acronym);
+
+    if (existingAcronym.length > 0) {
+      return reply
+        .status(400)
+        .send({ message: "State with this acronym already exists" });
+    }
+
     const result = await StatesService.createState(name, acronym);
 
     if (result.rowCount === 0) {
@@ -50,6 +58,20 @@ export default async function routes(app: FastifyTypedInstance) {
   app.put("/:id", { schema: updateStateDocs }, async (request, reply) => {
     const { id } = request.params;
     const { name, acronym } = request.body;
+
+    if (acronym.length !== 2) {
+      return reply
+        .status(400)
+        .send({ message: "Acronym must have 2 characters" });
+    }
+
+    const existingAcronym = await StatesService.getStateByAcronym(acronym);
+
+    if (existingAcronym.length > 0 && existingAcronym[0].id !== parseInt(id)) {
+      return reply
+        .status(400)
+        .send({ message: "State with this acronym already exists" });
+    }
 
     const result = await StatesService.updateState(parseInt(id), name, acronym);
 

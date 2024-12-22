@@ -24,4 +24,11 @@ export class StatesService {
   static async deleteState(id: number) {
     return db.delete(statesTable).where(eq(statesTable.id, id));
   }
+
+  static async getStateByAcronym(acronym: string) {
+    return db
+      .select()
+      .from(statesTable)
+      .where(eq(statesTable.acronym, acronym));
+  }
 }
