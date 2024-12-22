@@ -8,7 +8,7 @@ import {
 } from "fastify-type-provider-zod";
 import { fastifySwagger } from "@fastify/swagger";
 import { fastifySwaggerUi } from "@fastify/swagger-ui";
-import { routes } from "./routes";
+import v1routes from "./v1";
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -34,7 +34,7 @@ app.register(fastifySwaggerUi, {
   routePrefix: "/documentation",
 });
 
-app.register(routes);
+app.register(v1routes, { prefix: "/v1" });
 
 app
   .listen({
