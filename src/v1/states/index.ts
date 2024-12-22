@@ -1,5 +1,4 @@
 import { FastifyTypedInstance } from "../../types";
-import { db, statesTable } from "../../db";
 import {
   createStateDocs,
   deleteStateDocs,
@@ -7,7 +6,6 @@ import {
   getStatesDocs,
   updateStateDocs,
 } from "./schemas";
-import { eq } from "drizzle-orm";
 import { StatesService } from "./service";
 
 export default async function routes(app: FastifyTypedInstance) {
