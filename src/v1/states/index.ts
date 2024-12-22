@@ -1,12 +1,18 @@
 import { FastifyTypedInstance } from "../../types";
 import { db, statesTable } from "../../db";
-import z from "zod";
-import { createStateDocs, getAllStatesDocs, getStatesDocs } from "./schemas";
+import {
+  createStateDocs,
+  deleteStateDocs,
+  getAllStatesDocs,
+  getStatesDocs,
+  updateStateDocs,
+} from "./schemas";
 import { eq } from "drizzle-orm";
+import { StatesService } from "./service";
 
 export default async function routes(app: FastifyTypedInstance) {
   app.get("/", { schema: getAllStatesDocs }, async (request, reply) => {
-    const result = await db.select().from(statesTable);
+    const result = await StatesService.getAllStates();
 
     return reply.status(200).send(result);
   });
@@ -14,11 +20,7 @@ export default async function routes(app: FastifyTypedInstance) {
   app.get("/:id", { schema: getStatesDocs }, async (request, reply) => {
     const { id } = request.params;
 
-    const result = await db
-      .select()
-      .from(statesTable)
-      .where(eq(statesTable.id, parseInt(id)))
-      .limit(1);
+    const result = await StatesService.getState(parseInt(id));
 
     if (result.length === 0) {
       return reply.status(404).send({ message: "State not found" });
@@ -36,12 +38,37 @@ export default async function routes(app: FastifyTypedInstance) {
         .send({ message: "Acronym must have 2 characters" });
     }
 
-    const result = await db.insert(statesTable).values({ name, acronym });
+    const result = await StatesService.createState(name, acronym);
 
     if (result.rowCount === 0) {
       return reply.status(400).send({ message: "Failed to create state" });
     }
 
     return reply.status(201).send();
+  });
+
+  app.put("/:id", { schema: updateStateDocs }, async (request, reply) => {
+    const { id } = request.params;
+    const { name, acronym } = request.body;
+
+    const result = await StatesService.updateState(parseInt(id), name, acronym);
+
+    if (result.rowCount === 0) {
+      return reply.status(404).send({ message: "State not found" });
+    }
+
+    return reply.status(204).send();
+  });
+
+  app.delete("/:id", { schema: deleteStateDocs }, async (request, reply) => {
+    const { id } = request.params;
+
+    const result = await StatesService.deleteState(parseInt(id));
+
+    if (result.rowCount === 0) {
+      return reply.status(404).send({ message: "State not found" });
+    }
+
+    return reply.status(204).send();
   });
 }
