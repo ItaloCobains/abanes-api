@@ -9,7 +9,7 @@ import {
 import { StatesService } from "./service";
 
 export default async function routes(app: FastifyTypedInstance) {
-  app.get("/", { schema: getAllStatesDocs }, async (request, reply) => {
+  app.get("/", { schema: getAllStatesDocs }, async (_request, reply) => {
     const result = await StatesService.getAllStates();
 
     return reply.status(200).send(result);
