@@ -1,8 +1,24 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll,
+} from "vitest";
 import { StatesService } from "../../src/v1/states/service";
 import { db, statesTable } from "../../src/db";
 
 describe("StatesService", () => {
+  beforeAll(async () => {
+    await db.delete(statesTable);
+  });
+
+  afterAll(async () => {
+    await db.delete(statesTable);
+  });
+
   describe("getAllStates", () => {
     beforeEach(async () => {
       await db.insert(statesTable).values({ name: "Acre", acronym: "AC" });
