@@ -5,7 +5,10 @@
   "author": "ItaloCobains <italobrandao.contato@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch src/server.ts",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "test": "NODE_ENV=test drizzle-kit push && vitest --config vitest.config.mts --run"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
