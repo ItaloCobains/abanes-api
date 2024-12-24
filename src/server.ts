@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { fastify } from "fastify";
 import { fastifyCors } from "@fastify/cors";
 import {
@@ -11,6 +12,10 @@ import { fastifySwaggerUi } from "@fastify/swagger-ui";
 import v1routes from "./v1";
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
+
+app.register(import("@fastify/redis"), {
+  url: process.env.REDIS_URL,
+});
 
 app.setValidatorCompiler(validatorCompiler);
 

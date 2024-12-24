@@ -10,7 +10,17 @@ import { StatesService } from "./service";
 
 export default async function routes(app: FastifyTypedInstance) {
   app.get("/", { schema: getAllStatesDocs }, async (_request, reply) => {
+    const { redis } = app;
+
+    const cachedStates = await redis.get("states-get-all");
+
+    if (cachedStates) {
+      return reply.status(200).send(JSON.parse(cachedStates));
+    }
+
     const result = await StatesService.getAllStates();
+
+    await redis.set("states-get-all", JSON.stringify(result), "EX", 60);
 
     return reply.status(200).send(result);
   });
@@ -28,6 +38,7 @@ export default async function routes(app: FastifyTypedInstance) {
   });
 
   app.post("/", { schema: createStateDocs }, async (request, reply) => {
+    const { redis } = app;
     const { name, acronym } = request.body;
 
     if (acronym.length !== 2) {
@@ -50,12 +61,15 @@ export default async function routes(app: FastifyTypedInstance) {
       return reply.status(400).send({ message: "Failed to create state" });
     }
 
+    await redis.del("states-get-all");
+
     return reply.status(201).send();
   });
 
   app.put("/:id", { schema: updateStateDocs }, async (request, reply) => {
     const { id } = request.params;
     const { name, acronym } = request.body;
+    const { redis } = app;
 
     if (acronym.length !== 2) {
       return reply
@@ -77,17 +91,22 @@ export default async function routes(app: FastifyTypedInstance) {
       return reply.status(404).send({ message: "State not found" });
     }
 
+    await redis.del("states-get-all");
+
     return reply.status(204).send();
   });
 
   app.delete("/:id", { schema: deleteStateDocs }, async (request, reply) => {
     const { id } = request.params;
+    const { redis } = app;
 
     const result = await StatesService.deleteState(parseInt(id));
 
     if (result.rowCount === 0) {
       return reply.status(404).send({ message: "State not found" });
     }
+
+    await redis.del("states-get-all");
 
     return reply.status(204).send();
   });

@@ -8,10 +8,12 @@
     "dev": "tsx watch src/server.ts",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
+    "migrate:up": "drizzle-kit migrate",
     "test": "NODE_ENV=test drizzle-kit push && vitest --config vitest.config.mts --run --no-file-parallelism"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
+    "@fastify/redis": "^7.0.1",
     "@fastify/swagger": "^9.4.0",
     "@fastify/swagger-ui": "^5.2.0",
     "dotenv": "^16.4.7",
