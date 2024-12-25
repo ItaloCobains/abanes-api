@@ -9,9 +9,27 @@ import {
 } from "fastify-type-provider-zod";
 import { fastifySwagger } from "@fastify/swagger";
 import { fastifySwaggerUi } from "@fastify/swagger-ui";
+import { createBullBoard } from "@bull-board/api";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+import { FastifyAdapter } from "@bull-board/fastify";
+import AllQueues from "./queue.server";
 import v1routes from "./v1";
 
+const serverAdapter = new FastifyAdapter();
+
+createBullBoard({
+  queues: AllQueues.map((queue) => new BullMQAdapter(queue)),
+  serverAdapter,
+});
+
 const app = fastify().withTypeProvider<ZodTypeProvider>();
+
+serverAdapter.setBasePath("/admin/bull");
+
+app.register(serverAdapter.registerPlugin(), {
+  prefix: "/admin/bull",
+  basePath: "/admin/bull",
+});
 
 app.register(import("@fastify/redis"), {
   url: process.env.REDIS_URL,
