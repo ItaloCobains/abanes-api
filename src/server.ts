@@ -9,27 +9,23 @@ import {
 } from "fastify-type-provider-zod";
 import { fastifySwagger } from "@fastify/swagger";
 import { fastifySwaggerUi } from "@fastify/swagger-ui";
-import { createBullBoard } from "@bull-board/api";
-import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
-import { FastifyAdapter } from "@bull-board/fastify";
-import AllQueues from "./queue.server";
+import workerRoutes from "./workers";
 import v1routes from "./v1";
 
-const serverAdapter = new FastifyAdapter();
+const app = fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
 
-createBullBoard({
-  queues: AllQueues.map((queue) => new BullMQAdapter(queue)),
-  serverAdapter,
+app.register(import("@fastify/basic-auth"), {
+  validate: (username, password, req, reply, done) => {
+    if (username === "admin" && password === "admin") {
+      return done();
+    } else {
+      return done(new Error("Unauthorized"));
+    }
+  },
+  authenticate: true,
 });
 
-const app = fastify().withTypeProvider<ZodTypeProvider>();
-
-serverAdapter.setBasePath("/admin/bull");
-
-app.register(serverAdapter.registerPlugin(), {
-  prefix: "/admin/bull",
-  basePath: "/admin/bull",
-});
+app.register(workerRoutes);
 
 app.register(import("@fastify/redis"), {
   url: process.env.REDIS_URL,
